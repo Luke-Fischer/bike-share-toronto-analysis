@@ -1,0 +1,85 @@
+# --- Python build & bytecode ---
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyo
+
+# --- C extensions ---
+*.so
+*.pyd
+*.dll
+
+# --- Packaging / build artifacts ---
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+pip-wheel-metadata/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# --- Installer logs ---
+pip-log.txt
+pip-delete-this-directory.txt
+
+# --- Test / coverage ---
+.tox/
+.nox/
+.coverage
+.coverage.*
+.pytest_cache/
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.cache/          # pytest/ruff/etc caches
+
+# --- Type checkers / linters ---
+.mypy_cache/
+.pytype/
+.pyre/
+.pyright/
+.pyrightcache/
+.ruff_cache/
+
+# --- Envs & secrets ---
+.env
+.env.*
+!.env.example
+.venv/
+venv/
+ENV/
+env/
+.envrc
+
+# --- Logs & local data ---
+*.log
+logs/
+*.db
+*.sqlite
+*.sqlite3
+
+# --- IDE / editor ---
+.vscode/
+.idea/
+*.iml
+
+# --- OS junk / temp ---
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
