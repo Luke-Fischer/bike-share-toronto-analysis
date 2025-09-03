@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from .settings import settings
-from .routes import stations_static
+from .routes import stations_static, stations_status
 
 app = FastAPI(title="BikeShare API", version="0.1.0")
 
@@ -22,3 +22,4 @@ def healthz():
 
 # Routes
 app.include_router(stations_static.router)
+app.include_router(stations_status.router)

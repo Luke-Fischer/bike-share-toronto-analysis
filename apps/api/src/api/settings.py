@@ -10,6 +10,11 @@ class Settings(BaseSettings):
 
     # Simple cache & HTTP knobs
     STATION_INFO_TTL_SECONDS: int = 21600  # 6h
+
+    # STATIONS
+    STATION_STATUS_URL: str = "https://toronto.publicbikesystem.net/customer/gbfs/v2/en/station_status"
+    STATION_STATUS_TTL_SECONDS: int = 15
+
     HTTPX_TIMEOUT_SECONDS: float = 15.0
 
     # CORS (tighten in prod)
