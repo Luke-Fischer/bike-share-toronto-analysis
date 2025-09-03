@@ -47,3 +47,19 @@ export const STATIONS = {
     TEXT_HALO_WIDTH: 1,
   },
 };
+
+export const AVAILABILITY = {
+  // color by pct_full (0..1)
+  COLOR_BY_PCT: [
+    "case",
+    ["has", "pct_full"],
+    ["interpolate", ["linear"], ["get", "pct_full"],
+      0.00, "#d9480f",  // 0% bikes (empty) -> red
+      0.20, "#f59f00",  // low
+      0.50, "#74c0fc",  // medium
+      0.80, "#51cf66",  // high
+      1.00, "#2b8a3e"   // 100% bikes (full) -> green
+    ],
+    "#3b82f6" // fallback if pct_full missing (initial load)
+  ],
+};

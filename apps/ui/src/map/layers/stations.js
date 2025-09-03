@@ -1,11 +1,13 @@
 import mapboxgl from "mapbox-gl";
-import { API_BASE, STATIONS } from "../constants.js";
+import { API_BASE, STATIONS, AVAILABILITY } from "../constants.js";
+import { createStatusPoller } from "../data/statusPoller.js";
 
 let _stationsCache = null; // in-memory GeoJSON cache
 let _hoverBound = false;
 let _hoverPopup = null;
+let _statusPoller = null;
 
-// Fetch geojson data and cache it
+// Fetch the satic geojson data and cache it (I.e station locations, lat, lon, capacity, name)
 async function fetchStationsOnce(apiBase = API_BASE) {
   if (_stationsCache) return _stationsCache;
   const res = await fetch(`${apiBase}/v1/stations/static`, { cache: "default" });
@@ -22,10 +24,8 @@ function upsertSource(map, data) {
   else src.setData(data);
 }
 
-// Build circles layer
 function ensureCirclesLayer(map) {
   const { CIRCLES } = STATIONS.LAYER_IDS;
-
   if (map.getLayer(CIRCLES)) return;
 
   const s = STATIONS.STYLE;
@@ -39,7 +39,7 @@ function ensureCirclesLayer(map) {
         s.RADIUS_STOPS[0], s.RADIUS_STOPS[1],
         s.RADIUS_STOPS[2], s.RADIUS_STOPS[3],
       ],
-      "circle-color": s.CIRCLE_COLOR,
+      "circle-color": AVAILABILITY.COLOR_BY_PCT, 
       "circle-opacity": s.CIRCLE_OPACITY,
       "circle-stroke-color": s.CIRCLE_STROKE_COLOR,
       "circle-stroke-width": s.CIRCLE_STROKE_WIDTH,
@@ -85,14 +85,11 @@ function bindHoverOnce(map) {
   if (_hoverBound) return;
 
   _hoverPopup = new mapboxgl.Popup({ closeButton: false, closeOnClick: false, offset: 8 });
+  const L = STATIONS.LAYER_IDS;
 
-  const { CIRCLES } = STATIONS.LAYER_IDS;
-
-  map.on("mouseenter", CIRCLES, () => {
-    map.getCanvas().style.cursor = "pointer";
-  });
-
-  map.on("mousemove", CIRCLES, (e) => {
+  const onEnter = () => (map.getCanvas().style.cursor = "pointer");
+  const onLeave = () => { map.getCanvas().style.cursor = ""; _hoverPopup.remove(); };
+  const onMove  = (e) => {
     const f = e.features?.[0];
     if (!f) return;
     const p = f.properties;
@@ -101,18 +98,59 @@ function bindHoverOnce(map) {
       .setHTML(
         `<div style="font-weight:600;margin-bottom:4px">${p.name}</div>
          <div>Station ID: ${p.station_id}</div>
-         <div>Capacity: ${p.capacity}</div>`
+         <div>Capacity: ${p.capacity}</div>
+         <div>Bikes: ${p.bikes ?? "—"} &nbsp; Docks: ${p.docks ?? "—"}</div>`
       )
       .addTo(map);
-  });
+  };
 
-  map.on("mouseleave", CIRCLES, () => {
-    map.getCanvas().style.cursor = "";
-    if (_hoverPopup) _hoverPopup.remove();
-  });
+  // Bind to BOTH layers so labels-on-top still hover
+  for (const id of [L.CIRCLES, L.LABELS]) {
+    map.on("mouseenter", id, onEnter);
+    map.on("mousemove",  id, onMove);
+    map.on("mouseleave", id, onLeave);
+  }
 
   _hoverBound = true;
 }
+
+function mergeStatusIntoGeoJSON(geojson, statusMap) {
+  if (!geojson || !geojson.features) return geojson;
+  for (const f of geojson.features) {
+    const st = statusMap[f.properties.station_id];
+    if (st) {
+      f.properties.bikes = st.bikes;
+      f.properties.docks = st.docks;
+      f.properties.pct_full = st.pct_full;
+      f.properties.status = st.status;
+      f.properties.last_reported = st.last_reported;
+    }
+  }
+  return geojson;
+}
+
+// Start live status updates for this layer
+export function startStatusPolling(map, { apiBase = API_BASE, intervalMs = 15000 } = {}) {
+  if (_statusPoller?.isRunning?.()) return _statusPoller.stop;
+
+  _statusPoller = createStatusPoller({
+    apiBase,
+    intervalMs,
+    onUpdate: (statusMap) => {
+      if (!_stationsCache) return; // wait until static stations loaded
+      const updated = mergeStatusIntoGeoJSON(structuredClone(_stationsCache), statusMap);
+      const src = map.getSource(STATIONS.SOURCE_ID);
+      if (src) src.setData(updated);
+      _stationsCache = updated;
+    },
+  });
+
+  // stop automatically when the map is destroyed
+  map.once("remove", () => _statusPoller?.stop());
+  _statusPoller.start();
+  return () => _statusPoller.stop();
+}
+
 
 export async function ensureStations(map, apiBase = API_BASE) {
   const data = await fetchStationsOnce(apiBase);
