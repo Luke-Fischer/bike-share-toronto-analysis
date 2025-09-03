@@ -6,7 +6,7 @@ ENV_PATH = Path(__file__).resolve().parents[2] / ".env"
 
 class Settings(BaseSettings):
     # REQUIRED: direct station_information URL
-    STATION_INFO_URL: str
+    STATION_INFO_URL: str = "https://toronto.publicbikesystem.net/customer/gbfs/v2/en/station_information"
 
     # Simple cache & HTTP knobs
     STATION_INFO_TTL_SECONDS: int = 21600  # 6h

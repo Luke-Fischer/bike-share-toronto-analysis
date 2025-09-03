@@ -1,0 +1,28 @@
+version: "3.9"
+
+services:
+  api:
+    build:
+      context: ./apps/api
+      dockerfile: Dockerfile.dev
+    env_file:
+      - ./apps/api/.env
+    volumes:
+      - ./apps/api:/app
+    ports:
+      - "8000:8000"
+
+  ui:
+    build:
+      context: ./apps/ui
+      dockerfile: Dockerfile.dev
+    environment:
+      VITE_API_BASE: "http://localhost:8000"
+      VITE_MAPBOX_TOKEN: "${VITE_MAPBOX_TOKEN}"
+    volumes:
+      - ./apps/ui:/app
+      - /app/node_modules
+    ports:
+      - "5173:5173"
+    depends_on:
+      - api

@@ -83,3 +83,14 @@ Thumbs.db
 *.swp
 *.swo
 *~
+
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.sqlite*
+.venv/
+.env
+.cache/
+seed/
+.dist/

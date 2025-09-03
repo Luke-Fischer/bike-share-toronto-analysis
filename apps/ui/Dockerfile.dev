@@ -1,0 +1,17 @@
+FROM node:20-alpine
+
+WORKDIR /app
+
+# Install deps (use the right lockfile if you have one)
+COPY package.json ./
+COPY package-lock.json* pnpm-lock.yaml* yarn.lock* ./
+RUN npm ci || npm i
+
+# Copy source (we'll also mount a volume in compose for HMR)
+COPY . .
+
+ENV HOST=0.0.0.0
+EXPOSE 5173
+
+# VITE_* env vars will be passed at runtime from docker-compose
+CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0", "--port", "5173"]
