@@ -5,15 +5,14 @@ ENV PYTHONUNBUFFERED=1 \
 
 WORKDIR /app
 
-# Install system deps you might need later (optional)
 RUN apt-get update && apt-get install -y --no-install-recommends \
     curl ca-certificates && rm -rf /var/lib/apt/lists/*
 
-# Install Python deps first (better layer caching)
+# Install Python deps first
 COPY requirements.txt .
 RUN pip install -r requirements.txt
 
-# Copy the app (we'll also mount volume in compose for live reload)
+# Copy the app
 COPY . .
 
 EXPOSE 8000

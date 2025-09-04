@@ -40,7 +40,7 @@ export const STATIONS = {
 
     // label styling
     LABEL_MINZOOM: 13,
-    TEXT_SIZE: 11,
+    TEXT_SIZE: 10,
     TEXT_OFFSET: [0, 1.0],
     TEXT_COLOR: "#0f172a",
     TEXT_HALO_COLOR: "#ffffff",
@@ -54,7 +54,8 @@ export const AVAILABILITY = {
     "case",
     ["has", "pct_full"],
     ["interpolate", ["linear"], ["get", "pct_full"],
-      0.00, "#d9480f",  // 0% bikes (empty) -> red
+      0.00, "#FF0000",  // 0% bikes (empty) -> red
+      0.01, "#d9480f",  // 1 % bikes light red
       0.20, "#f59f00",  // low
       0.50, "#74c0fc",  // medium
       0.80, "#51cf66",  // high
