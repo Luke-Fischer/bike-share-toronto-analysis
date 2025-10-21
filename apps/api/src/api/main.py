@@ -17,6 +17,7 @@ app.add_middleware(
 
 # Health check
 @app.get("/v1/healthz")
+@app.head("/v1/healthz")
 def healthz():
     return {"ok": True}
 
